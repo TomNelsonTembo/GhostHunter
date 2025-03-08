@@ -1,0 +1,20 @@
+{
+    "manifest_version": 3,
+    "name": "Ghost Hunter",
+    "version": "1.0.0",
+    "description": "Extension for Ghost Hunter",
+    "icons": {
+        "32": "/assets/icon02.png",
+        "48": "/assets/icon02.png"
+    },
+    "action": {
+        "default_popup": "index.html"
+    },
+    "permissions": [
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://*/*",
+        "http://*/*"
+    ]
+}
