@@ -19,8 +19,10 @@
     "oauth2": {
         "client_id": "521218612115-kelj60v104o8f9urbu9qia3k9g35jchm.apps.googleusercontent.com",
         "scopes": ["openid", "email", "profile"]
-      }
-    ,    
+    },
+    "background": {
+        "service_worker": "service-worker.js"
+    },
     "host_permissions": [
         "https://*/*",
         "http://*/*",
