@@ -11,10 +11,19 @@
         "default_popup": "index.html"
     },
     "permissions": [
-        "scripting"
+        "scripting",
+        "storage",
+        "identity",
+        "webRequest"
     ],
+    "oauth2": {
+        "client_id": "521218612115-kelj60v104o8f9urbu9qia3k9g35jchm.apps.googleusercontent.com",
+        "scopes": ["openid", "email", "profile"]
+      }
+    ,    
     "host_permissions": [
         "https://*/*",
-        "http://*/*"
+        "http://*/*",
+        "https://*.supabase.co/*"
     ]
 }
