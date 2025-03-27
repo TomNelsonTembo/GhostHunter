@@ -16,10 +16,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       }
 
       // Open the Chrome extension popup or dashboard
-      chrome.windows.create({
-        url: `chrome-extension://${chrome.runtime.id}/index.html#/`,
-        type: "popup",
-      });
+      // chrome.windows.create({
+      //   url: `chrome-extension://${chrome.runtime.id}/index.html#/`,
+      //   type: "popup",
+      // });
     });
   }
 });
