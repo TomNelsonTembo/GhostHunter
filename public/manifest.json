@@ -2,13 +2,14 @@
     "manifest_version": 3,
     "name": "Ghost Hunter",
     "version": "1.0.0",
-    "description": "Extension for Ghost Hunter",
-    "icons": {
-        "32": "/assets/icon02.png",
-        "48": "/assets/icon02.png"
-    },
+    "description": "A browser extension designed to help job seekers identify and track ghost job postings.",
+
     "action": {
         "default_popup": "index.html"
+    },
+    "icons": {
+        "32": "/assets/gh.png",
+        "48": "/assets/gh.png"
     },
     "permissions": [
         "scripting",
@@ -16,12 +17,6 @@
         "identity",
         "webRequest"
     ],
-    "background": {
-        "service_worker": "service-worker.js"
-    },
-    "host_permissions": [
-        "https://*/*",
-        "http://*/*",
-        "https://*.supabase.co/*"
-    ]
+  
+    "host_permissions": ["https://*.linkedin.com/*", "https://*.indeed.com/*"]
 }
