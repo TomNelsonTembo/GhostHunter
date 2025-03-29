@@ -187,6 +187,17 @@
     background-color: rgba(241, 196, 15, 0.15);
     color: #f1c40f;
   }
+  .status.rejected {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+  }
+  
+  .status.archived {
+    background-color: rgba(177, 60, 231, 0.15);
+    color: #9a3ce7;
+  }
+  
+
   
   .date {
     color: #6b7280;
@@ -452,3 +463,47 @@
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+  /* Make dashboard container scrollable */
+.dashboard-container {
+  width: 380px;
+  height: 600px; /* Fixed height for extension */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent double scrollbars */
+}
+
+.dashboard-content {
+  flex: 1;
+  overflow-y: auto; /* Make content scrollable */
+  padding: 0 16px 16px;
+}
+
+.job-list {
+  max-height: calc(100% - 40px); /* Reserve space for pagination */
+  overflow-y: auto;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid #383838;
+  margin-top: auto; /* Push to bottom */
+}
+
+.pagination-controls button {
+  background-color: #383838;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

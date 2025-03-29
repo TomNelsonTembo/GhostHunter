@@ -11,7 +11,10 @@ export default function Dashboard() {
   const [extensionData, setExtensionData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(5); // Items per page
+  const [totalItems, setTotalItems] = useState(0);
+  const [isPaginating, setIsPaginating] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
 
   useEffect(() => {
@@ -33,23 +36,59 @@ export default function Dashboard() {
     fetchData();
   }, [user]);
 
+  const fetchTrackedJobs = async (page = 1) => {
+    try {
+      page === 1 ? setLoading(true) : setIsPaginating(true);
+      const result = await pb.collection("extension_data").getList(page, perPage, {
+        filter: `user = "${pb.authStore.model.id}"`,
+        sort: "-created",
+      });
+      
+      setExtensionData(result.items);
+      setTotalItems(result.totalItems);
+      setCurrentPage(page);
+    } catch (err) {
+      console.error("Failed to fetch jobs:", err);
+    } finally {
+      setLoading(false);
+      setIsPaginating(false);
+    }
+  };
+  
+  // Add this to your pagination controls:
+  {isPaginating && <span className="loading-indicator">Loading...</span>}
   const handleScanPage = async () => {
     setIsScanning(true);
+   
+  
     try {
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
+      // Get active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      // First inject the content script
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js']
       });
-      console.log("Scanning page for jobs...");
-      // Execute content script
+  
+      // Then execute the scanning function
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        
         func: () => {
-          return window.scanPageForJobs ? window.scanPageForJobs() : [];
-        },
+          try {
+            if (typeof window.scanPageForJobs === 'function') {
+              return window.scanPageForJobs();
+            }
+            throw new Error('Scan function not available');
+          } catch (err) {
+            console.error('Scan error:', err);
+            return { error: err.message };
+          }
+        }
       });
 
+
+      
       if (results[0]?.result?.length > 0) {
         await saveJobs(results[0].result);
         await fetchTrackedJobs(); // Refresh the list
@@ -75,21 +114,28 @@ export default function Dashboard() {
       console.error("Failed to save jobs:", error);
     }
   };
-  const fetchTrackedJobs = async () => {
-    try {
-      setLoading(true);
-      const records = await pb.collection("extension_data").getFullList({
-        filter: `user = "${pb.authStore.model.id}"`,
-        sort: "-created",
-      });
-      setExtensionData(records);
-    } catch (err) {
-      console.error("Failed to fetch jobs:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(totalItems / perPage);
+  
+    return (
+      <div className="pagination-controls">
+        <button
+          onClick={() => fetchTrackedJobs(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span>Page {currentPage} of {totalPages}</span>
+        <button
+          onClick={() => fetchTrackedJobs(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
+      </div>
+    );
+  };
   const handleCloseOptions = () => {
     setShowOptions(false);
   };
@@ -146,13 +192,20 @@ export default function Dashboard() {
         </div>
       )}
 
-      <main className="dashboard-content">
-        <h2 className="dashboard-title">Your Tracked Jobs</h2>
+<main className="dashboard-content">
+      <h2 className="dashboard-title">Your Tracked Jobs</h2>
 
-        {extensionData.length > 0 ? (
+      {extensionData.length > 0 ? (
+        <>
           <ul className="job-list">
             {extensionData.map((job) => (
               <li key={job.id} className="job-item">
+              <a 
+                href={job.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="job-link"
+              >
                 <h3>{job.title}</h3>
                 <p className="company">{job.company}</p>
                 <div className="job-meta">
@@ -163,22 +216,25 @@ export default function Dashboard() {
                     Added: {new Date(job.created).toLocaleDateString()}
                   </span>
                 </div>
+              </a>
               </li>
             ))}
           </ul>
-        ) : (
-          <div className="empty-state">
-            <p>No jobs tracked yet</p>
-            <button
-              className={`scan-button ${isScanning ? "loading" : ""}`}
-              onClick={handleScanPage}
-              disabled={isScanning}
-            >
-              {isScanning ? "Scanning..." : "Scan Current Page"}
-            </button>
-          </div>
-        )}
-      </main>
+          <PaginationControls />
+        </>
+      ) : (
+        <div className="empty-state">
+          <p>No jobs tracked yet</p>
+          <button
+            className={`scan-button ${isScanning ? "loading" : ""}`}
+            onClick={handleScanPage}
+            disabled={isScanning}
+          >
+            {isScanning ? "Scanning..." : "Scan Current Page"}
+          </button>
+        </div>
+      )}
+    </main>
 
       <footer className="dashboard-footer">
         <button onClick={handleLogout} className="logout-button">
