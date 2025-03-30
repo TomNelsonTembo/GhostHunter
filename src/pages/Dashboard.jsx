@@ -39,11 +39,13 @@ export default function Dashboard() {
   const fetchTrackedJobs = async (page = 1) => {
     try {
       page === 1 ? setLoading(true) : setIsPaginating(true);
-      const result = await pb.collection("extension_data").getList(page, perPage, {
-        filter: `user = "${pb.authStore.model.id}"`,
-        sort: "-created",
-      });
-      
+      const result = await pb
+        .collection("extension_data")
+        .getList(page, perPage, {
+          filter: `user = "${pb.authStore.model.id}"`,
+          sort: "-created",
+        });
+
       setExtensionData(result.items);
       setTotalItems(result.totalItems);
       setCurrentPage(page);
@@ -54,41 +56,43 @@ export default function Dashboard() {
       setIsPaginating(false);
     }
   };
-  
+
   // Add this to your pagination controls:
-  {isPaginating && <span className="loading-indicator">Loading...</span>}
+  {
+    isPaginating && <span className="loading-indicator">Loading...</span>;
+  }
   const handleScanPage = async () => {
     setIsScanning(true);
-   
-  
+
     try {
       // Get active tab
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      
+      const [tab] = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+      });
+
       // First inject the content script
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        files: ['content.js']
+        files: ["content.js"],
       });
-  
+
       // Then execute the scanning function
       const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => {
           try {
-            if (typeof window.scanPageForJobs === 'function') {
+            if (typeof window.scanPageForJobs === "function") {
               return window.scanPageForJobs();
             }
-            throw new Error('Scan function not available');
+            throw new Error("Scan function not available");
           } catch (err) {
-            console.error('Scan error:', err);
+            console.error("Scan error:", err);
             return { error: err.message };
           }
-        }
+        },
       });
 
-
-      
       if (results[0]?.result?.length > 0) {
         await saveJobs(results[0].result);
         await fetchTrackedJobs(); // Refresh the list
@@ -115,9 +119,14 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = () => {
+    pb.authStore.clear();
+    navigate("/");
+  };
+
   const PaginationControls = () => {
     const totalPages = Math.ceil(totalItems / perPage);
-  
+
     return (
       <div className="pagination-controls">
         <button
@@ -126,7 +135,9 @@ export default function Dashboard() {
         >
           Previous
         </button>
-        <span>Page {currentPage} of {totalPages}</span>
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
         <button
           onClick={() => fetchTrackedJobs(currentPage + 1)}
           disabled={currentPage === totalPages}
@@ -138,11 +149,6 @@ export default function Dashboard() {
   };
   const handleCloseOptions = () => {
     setShowOptions(false);
-  };
-
-  const handleLogout = () => {
-    pb.authStore.clear();
-    navigate("/");
   };
 
   if (loading) return <div className="dashboard-loading">Loading...</div>;
@@ -180,67 +186,81 @@ export default function Dashboard() {
       </header>
 
       {showOptions && (
+        <div className="options-modal">
+        {/* Modal overlay */}
+        <div className="options-overlay" onClick={handleCloseOptions}></div>
+        
+        {/* Options dropdown */}
         <div className="options-dropdown">
-          <button className="close-options" onClick={handleCloseOptions}>
-            ×
-          </button>
-          <OptionsSection
-            user={user}
-            setUser={setUser}
-            onClose={handleCloseOptions}
-          />
+          {/* Top bar with close and logout buttons */}
+          <div className="options-top-bar">
+            <button className="logout-button" onClick={handleLogout}>
+              Logout
+            </button>
+            <button className="close-options" onClick={handleCloseOptions}>
+              ×
+            </button>
+          </div>
+    
+          {/* Options content */}
+          <div className="options-content">
+            <OptionsSection
+              user={user}
+              setUser={setUser}
+              onClose={handleCloseOptions}
+            />
+          </div>
         </div>
+      </div>
       )}
 
-<main className="dashboard-content">
-      <h2 className="dashboard-title">Your Tracked Jobs</h2>
+      <main className="dashboard-content">
+        <h2 className="dashboard-title">Your Tracked Jobs</h2>
 
-      {extensionData.length > 0 ? (
-        <>
-          <ul className="job-list">
-            {extensionData.map((job) => (
-              <li key={job.id} className="job-item">
-              <a 
-                href={job.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="job-link"
-              >
-                <h3>{job.title}</h3>
-                <p className="company">{job.company}</p>
-                <div className="job-meta">
-                  <span className={`status ${job.status.toLowerCase()}`}>
-                    {job.status}
-                  </span>
-                  <span className="date">
-                    Added: {new Date(job.created).toLocaleDateString()}
-                  </span>
-                </div>
-              </a>
-              </li>
-            ))}
-          </ul>
-          <PaginationControls />
-        </>
-      ) : (
-        <div className="empty-state">
-          <p>No jobs tracked yet</p>
-          <button
-            className={`scan-button ${isScanning ? "loading" : ""}`}
-            onClick={handleScanPage}
-            disabled={isScanning}
-          >
-            {isScanning ? "Scanning..." : "Scan Current Page"}
-          </button>
-        </div>
-      )}
-    </main>
-
-      <footer className="dashboard-footer">
-        <button onClick={handleLogout} className="logout-button">
-          Logout
-        </button>
-      </footer>
+        {extensionData.length > 0 ? (
+          <>
+            <ul className="job-list">
+              {extensionData.map((job) => (
+                <li key={job.id} className="job-item">
+                  <a
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent default anchor behavior
+                      navigate(`/jobs/${job.id}`); // Navigate programmatically
+                    }}
+                    href={`/jobs/${job.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="job-link"
+                  >
+                    <h3>{job.title}</h3>
+                    <p className="company">{job.company}</p>
+                    <div className="job-meta">
+                      <span className={`status ${job.status.toLowerCase()}`}>
+                        {job.status}
+                      </span>
+                      <span className="date">
+                        Added: {new Date(job.created).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <PaginationControls />
+          </>
+        ) : (
+          <div className="empty-state">
+            <p>No jobs tracked yet</p>
+            <button
+              className={`scan-button ${isScanning ? "loading" : ""}`}
+              onClick={handleScanPage}
+              disabled={isScanning}
+            >
+              {isScanning ? "Scanning..." : "Scan Current Page"}
+            </button>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

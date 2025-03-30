@@ -42,6 +42,7 @@
   .auth-options {
     background: #383838ce;
     padding: 20px;
+    padding-bottom: 5px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
@@ -83,7 +84,7 @@
   /* Divider */
   .divider {
     position: relative;
-    margin: 20px 0;
+    margin: 10px 0;
     text-align: center;
     color: #95a5a68e;
   }
@@ -153,5 +154,37 @@
     color: #e74c3c;
     font-size: 13px;
     margin-bottom: 16px;
+    text-align: center;
+  }
+
+
+  .forgot-password-link {
+    color: #666;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 5px;
+    font-size: 14px;
+  }
+  
+  .forgot-password-link:hover {
+    color: #2ecc71;
+    text-decoration: underline;
+  }
+  
+  .back-to-login {
+    color: #666;
+    text-align: center;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  
+  .back-to-login:hover {
+    color: #333;
+    text-decoration: underline;
+  }
+  
+  .success-message {
+    color: green;
     text-align: center;
   }

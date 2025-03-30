@@ -38,3 +38,4 @@ function scanPageForJobs() {
 
 // Make function available to extension
 window.scanPageForJobs = scanPageForJobs;
+
