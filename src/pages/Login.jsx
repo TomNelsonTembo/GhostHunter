@@ -12,19 +12,49 @@ export default function Login() {
   const [resetEmailSent, setResetEmailSent] = useState(false); // New state
   const navigate = useNavigate();
 
+  const storeAuthData = async () => {
+    try {
+      if (chrome?.storage?.local) {
+        // Extract only the necessary data from authStore
+        const authData = {
+          token: pb.authStore.token,
+          id: pb.authStore.record.id, 
+          // Note: model contains sensitive data - only store what you need
+        };
+        
+        await chrome.storage.local.set({ "pb_auth_user": authData });
+      }
+    } catch (err) {
+      console.error('Storage error:', err);
+      throw err; // Re-throw to handle in calling function
+    }
+  };
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+   
+  
     try {
+      // 1. Authenticate
       await pb.collection('users').authWithPassword(email, password);
+      
+      // 2. Store auth data
+      await storeAuthData();
+      
+      // 3. Navigate on success
       navigate('/dashboard');
     } catch (err) {
-      setError('Login failed: ' + err.message);
+      setError('Login failed: ' + (err.message || 'Unknown error'));
+      console.error('Login error:', err);
+    } finally {
+      // Clear password field
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       await pb.collection('users').authWithOAuth2({ provider: 'google' });
+      await storeAuthData();
       navigate('/dashboard');
     } catch (err) {
       setError('Login failed: ' + err.message);
@@ -36,6 +66,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await pb.collection('users').requestPasswordReset(email);
+      await storeAuthData();
       setResetEmailSent(true);
       setError('');
     } catch (err) {

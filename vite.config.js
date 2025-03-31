@@ -9,7 +9,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
-        background: 'src/background/service-worker.js',
         content: resolve('src/scripts/content-script.js')
       },
       output: {

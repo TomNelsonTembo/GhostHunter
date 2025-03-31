@@ -263,3 +263,13 @@
   .job-link:hover h3 {
     color: #27ae60;
   }
+
+  /* Add to your existing action button styles */
+.action-button.delete {
+  background-color: #ff4444;
+  color: white;
+}
+
+.action-button.delete:hover {
+  background-color: #cc0000;
+}

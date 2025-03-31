@@ -10,7 +10,6 @@ export default function Dashboard() {
   const [user, setUser] = useState(pb.authStore.model);
   const [extensionData, setExtensionData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isScanning, setIsScanning] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(5); // Items per page
   const [totalItems, setTotalItems] = useState(0);
@@ -61,69 +60,33 @@ export default function Dashboard() {
   {
     isPaginating && <span className="loading-indicator">Loading...</span>;
   }
-  const handleScanPage = async () => {
-    setIsScanning(true);
 
+
+  
+
+  const handleLogout = async () => {
     try {
-      // Get active tab
-      const [tab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-
-      // First inject the content script
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["content.js"],
-      });
-
-      // Then execute the scanning function
-      const results = await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: () => {
-          try {
-            if (typeof window.scanPageForJobs === "function") {
-              return window.scanPageForJobs();
-            }
-            throw new Error("Scan function not available");
-          } catch (err) {
-            console.error("Scan error:", err);
-            return { error: err.message };
-          }
-        },
-      });
-
-      if (results[0]?.result?.length > 0) {
-        await saveJobs(results[0].result);
-        await fetchTrackedJobs(); // Refresh the list
-      } else {
-        console.log("No jobs found on this page");
-      }
-    } catch (error) {
-      console.error("Scan failed:", error);
-    } finally {
-      setIsScanning(false);
+      // 1. Clear PocketBase auth
+      pb.authStore.clear();
+      
+      // 2. Remove stored auth data
+      await chrome.storage.local.remove("pb_auth_user");
+      
+      // 4. Navigate to home page
+      navigate("/");
+      
+      // Optional: Refresh the page to ensure clean state
+      window.location.reload();
+      
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Optional: Show error to user if needed
+      // setError("Failed to logout properly");
+      
+      // Still navigate even if cleanup failed
+      navigate("/");
     }
   };
-
-  const saveJobs = async (jobs) => {
-    try {
-      for (const job of jobs) {
-        await pb.collection("extension_data").create({
-          ...job,
-          user: pb.authStore.model.id,
-        });
-      }
-    } catch (error) {
-      console.error("Failed to save jobs:", error);
-    }
-  };
-
-  const handleLogout = () => {
-    pb.authStore.clear();
-    navigate("/");
-  };
-
   const PaginationControls = () => {
     const totalPages = Math.ceil(totalItems / perPage);
 
@@ -251,13 +214,7 @@ export default function Dashboard() {
         ) : (
           <div className="empty-state">
             <p>No jobs tracked yet</p>
-            <button
-              className={`scan-button ${isScanning ? "loading" : ""}`}
-              onClick={handleScanPage}
-              disabled={isScanning}
-            >
-              {isScanning ? "Scanning..." : "Scan Current Page"}
-            </button>
+            
           </div>
         )}
       </main>

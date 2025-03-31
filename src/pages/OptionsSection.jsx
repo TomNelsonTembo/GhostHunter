@@ -51,9 +51,9 @@ export default function OptionsSection({ user, setUser, onClose }) {
       });
       
       // Update chrome storage
-      if (chrome.storage?.sync) {
-        chrome.storage.sync.set({ user: updatedUser });
-      }
+      // if (chrome.storage?.local) {
+      //   chrome.storage.local.set({ user: updatedUser });
+      // }
       // Auto-close after success
       setTimeout(onClose, 1500);
     } catch (err) {

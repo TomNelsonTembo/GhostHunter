@@ -25,5 +25,8 @@
         ],
         "js": ["content.js"]
       }],
-    "host_permissions": ["https://*.linkedin.com/*", "https://*.indeed.com/*"]
+    "host_permissions": ["https://*.linkedin.com/*", "https://*.indeed.com/*"],
+    "background": {
+        "service_worker": "service-worker.js"
+  }
 }

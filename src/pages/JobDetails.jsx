@@ -10,6 +10,7 @@ export default function JobDetails() {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -25,6 +26,17 @@ export default function JobDetails() {
 
     fetchJob();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this job?')) return;
+    
+    try {
+      await pb.collection('extension_data').delete(id);
+      navigate('/'); // Redirect to jobs list after deletion
+    } catch (err) {
+      console.error('Failed to delete job:', err);
+    }
+  };
 
   const performAnalysis = async () => {
     setIsAnalyzing(true);
@@ -163,6 +175,12 @@ export default function JobDetails() {
               }
             }}
           />
+          <button 
+          onClick={handleDelete}
+          className="action-button delete"
+        >
+          Delete Job
+        </button>
         </section>
       </div>
     </div>
