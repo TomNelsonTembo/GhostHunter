@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "Ghost Hunter",
+    "version": "1.0.0",
+    "description": "A browser extension designed to help job seekers identify and track ghost job postings.",
+
+    "action": {
+        "default_popup": "index.html"
+    },
+    "icons": {
+        "32": "/assets/gh.png",
+        "48": "/assets/gh.png"
+    },
+    "permissions": [
+        "scripting",
+        "activeTab",
+        "storage",
+        "identity",
+        "webRequest"
+    ],
+    "content_scripts": [{
+        "matches": [
+          "https://*.linkedin.com/*",
+          "https://*.indeed.com/*"
+        ],
+        "js": ["content.js"]
+      }],
+    "host_permissions": ["https://*.linkedin.com/*", "https://*.indeed.com/*"],
+    "background": {
+        "service_worker": "service-worker.js"
+  }
+}
